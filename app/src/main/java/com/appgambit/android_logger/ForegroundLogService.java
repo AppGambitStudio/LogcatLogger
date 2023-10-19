@@ -111,8 +111,8 @@ public class ForegroundLogService extends Service {
                             }
                         }
 
-                        System.out.println(logFile);
-                        System.out.println(fileSizeInMB);
+//                        System.out.println(logFile);
+//                        System.out.println(fileSizeInMB);
                         Thread.sleep(5000);
                     }
                 } catch (InterruptedException | IOException e) {
