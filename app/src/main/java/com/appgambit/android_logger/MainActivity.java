@@ -10,7 +10,6 @@ import android.widget.TextView;
 import android.widget.Toast;
 import androidx.appcompat.app.AppCompatActivity;
 
-//import com.vizabli.android_logger.R;
 
 public class MainActivity extends AppCompatActivity {
     private TextView t1;
@@ -26,23 +25,18 @@ public class MainActivity extends AppCompatActivity {
 //        serviceIntent2 = new Intent(this, LogCaptureService.class);
 //        startService(serviceIntent2);
 
-//
-//        // Check if the LogCaptureService is running
-
-        Intent serviceIntent = new Intent(this, ForegroundLogService.class);
-        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
-            startForegroundService(serviceIntent);
-        } else {
-            startService(serviceIntent);
-        }
+       // Check if the LogCaptureService is running
         if (isServiceRunning(ForegroundLogService.class)) {
             Toast.makeText(this, "LogCaptureService is running", Toast.LENGTH_SHORT).show();
         } else {
+            Intent serviceIntent = new Intent(this, ForegroundLogService.class);
+            if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
+                startForegroundService(serviceIntent);
+            } else {
+                startService(serviceIntent);
+            }
             Toast.makeText(this, "LogCaptureService is not running", Toast.LENGTH_SHORT).show();
         }
-
-
-
     }
 
 
