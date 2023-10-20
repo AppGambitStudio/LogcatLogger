@@ -13,17 +13,12 @@ import androidx.appcompat.app.AppCompatActivity;
 
 public class MainActivity extends AppCompatActivity {
     private TextView t1;
-    private Intent serviceIntent1;
-    private Intent serviceIntent2;
+
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
         Context context=getApplicationContext();
-
-        // Start the LogCaptureService
-//        serviceIntent2 = new Intent(this, LogCaptureService.class);
-//        startService(serviceIntent2);
 
        // Check if the LogCaptureService is running
         if (isServiceRunning(ForegroundLogService.class)) {
@@ -36,6 +31,12 @@ public class MainActivity extends AppCompatActivity {
                 startService(serviceIntent);
             }
             Toast.makeText(this, "LogCaptureService is not running", Toast.LENGTH_SHORT).show();
+        }
+
+        // Start the Server if not running
+        if (!isServiceRunning(WebServerService.class)) {
+            Intent serviceIntent2 = new Intent(this, WebServerService.class);
+            startService(serviceIntent2);
         }
     }
 
