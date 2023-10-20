@@ -8,6 +8,7 @@ import android.os.Handler;
 import android.net.Uri;
 import android.text.format.Formatter;
 import android.net.wifi.WifiManager;
+import android.util.Log;
 
 import java.io.BufferedReader;
 import java.io.File;
@@ -26,12 +27,11 @@ public class WebServerService extends Service {
     private ServerSocket serverSocket;
     private boolean isServerRunning;
     private Handler handler = new Handler(Looper.getMainLooper());
-    private String basePath;
+
 
     @Override
     public void onCreate() {
         super.onCreate();
-        basePath = "/storage/emulated/0/Android/data/com.appgambit.android_logger/files/Log_Datas";
         startServer();
     }
 
@@ -57,7 +57,7 @@ public class WebServerService extends Service {
         handler.post(new Runnable() {
             @Override
             public void run() {
-                String deviceIpAddress = getDeviceIpAddress();
+               String deviceIpAddress = getDeviceIpAddress();
                 if (deviceIpAddress != null) {
                     String urlToOpen = "http://" + deviceIpAddress + ":" + SERVER_PORT + "/";
                     Intent intent = new Intent(Intent.ACTION_VIEW, Uri.parse(urlToOpen));
@@ -83,36 +83,30 @@ public class WebServerService extends Service {
     private void handleClientRequest(Socket clientSocket) {
         try {
             String deviceIpAddress = getDeviceIpAddress();
-            String folderPath = basePath; // Use the base path
-            File folder = new File(folderPath);
-            FileFilter filter = new FileFilter() {
-                @Override
-                public boolean accept(File file) {
-                    return file.isFile() && file.getName().endsWith(".txt");
-                }
-            };
-            File[] files = folder.listFiles(filter);
+            String request = getRequest(clientSocket);
+            File folder = new File(getExternalFilesDir("Log_Datas").getAbsolutePath());
 
-            if (deviceIpAddress != null) {
-                String request = getRequest(clientSocket);
-                if (request != null && request.startsWith("GET /download?file=")) {
-                    // Extract the requested file name
-                    String requestedFileName = request.substring(20);
-                    File requestedFile = new File(folder, requestedFileName);
-
-                    if (requestedFile.exists()) {
-                        // Serve the requested file
-                        serveFile(requestedFile, clientSocket);
-                    } else {
-                        // Handle file not found
-                        serveFileNotFound(clientSocket);
-                    }
+            if (deviceIpAddress != null && request != null && request.startsWith("/Log_Datas/")) {
+                // Extract the requested file name
+                String requestedFileName = request.substring(11); // Remove "/Log_Datas/" part
+                File requestedFile = new File(folder, requestedFileName);
+                if (requestedFile.exists()) {
+                    // Serve the requested file
+                    serveFile(requestedFile, clientSocket);
                 } else {
-                    // Serve the list of files
-                    serveFileList(clientSocket, files);
+                    // Handle file not found
+                    serveFileNotFound(clientSocket);
                 }
             } else {
-                // Handle the case where you couldn't retrieve the device IP address
+                // Serve the list of files
+                FileFilter filter = new FileFilter() {
+                    @Override
+                    public boolean accept(File file) {
+                        return file.isFile() && file.getName().endsWith(".txt");
+                    }
+                };
+                File[] files = folder.listFiles(filter);
+                serveFileList(clientSocket, files);
             }
 
             clientSocket.close();
@@ -178,6 +172,7 @@ public class WebServerService extends Service {
 
     private void serveFileList(Socket clientSocket, File[] files) {
         try {
+            String deviceIpAddress = getDeviceIpAddress();
             OutputStream os = clientSocket.getOutputStream();
             StringBuilder response = new StringBuilder();
 
@@ -195,7 +190,10 @@ public class WebServerService extends Service {
             response.append("    <ul>\n");
 
             for (File file : files) {
-                response.append("        <li><a href=\"/download?file=" + file.getName() + "\">" + file.getName() + "</a></li>\n");
+                String fileName = file.getName();
+                String urlToOpen = "http://" + deviceIpAddress + ":" + SERVER_PORT + "/";
+                String downloadUrl = urlToOpen + "Log_Datas/" + fileName; // Replace with your actual URL
+                response.append("        <li><a href='" + downloadUrl + "'>" + fileName + "</a></li>\n");
             }
 
             response.append("    </ul>\n");
