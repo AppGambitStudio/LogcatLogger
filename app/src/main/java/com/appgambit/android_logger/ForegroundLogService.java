@@ -100,7 +100,7 @@ public class ForegroundLogService extends Service {
                             fileSizeInKB = fileSizeInBytes / 1024;
                             fileSizeInMB = fileSizeInKB / 1024;
 
-                            if (fileSizeInMB >= 1.0) {
+                            if (fileSizeInMB >= 5.0) {
                                 SimpleDateFormat sdf = new SimpleDateFormat("yyyyMMdd_HHmmss", Locale.US);
                                 String newFileName = "log_" + sdf.format(new Date()) + ".txt";
                                 logFile = new File(root, newFileName);
