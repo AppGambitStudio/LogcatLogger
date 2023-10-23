@@ -33,7 +33,7 @@ public class LogCaptureService extends Service {
     private Handler handler = new Handler(Looper.getMainLooper());
 
     // Define the number of days after which log files should be deleted.
-    private static final int DELETE_LOGS_OLDER_THAN_DAYS = 2;
+    static final int DELETE_LOGS_OLDER_THAN_DAYS = 2;
 
     @Override
     public IBinder onBind(Intent intent) {
@@ -64,7 +64,7 @@ public class LogCaptureService extends Service {
                     double fileSizeInMB = 0;
 
                     while (!Thread.currentThread().isInterrupted()) {
-                        Process process = Runtime.getRuntime().exec("logcat -d");
+                        Process process = Runtime.getRuntime().exec("logcat");
 
                         BufferedReader bufferedReader = new BufferedReader(new InputStreamReader(process.getInputStream()));
                         StringBuilder stringBuilder = new StringBuilder();

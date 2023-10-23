@@ -1,6 +1,7 @@
 package com.appgambit.android_logger;
 
 import android.app.Service;
+import android.content.Context;
 import android.content.Intent;
 import android.os.IBinder;
 import android.os.Looper;
@@ -23,7 +24,7 @@ import java.net.Socket;
 import java.util.ArrayList;
 
 public class WebServerService extends Service {
-    private static final int SERVER_PORT = 12993;
+    static final int SERVER_PORT = 12993;
     private ServerSocket serverSocket;
     private boolean isServerRunning;
     private Handler handler = new Handler(Looper.getMainLooper());
@@ -57,21 +58,21 @@ public class WebServerService extends Service {
         handler.post(new Runnable() {
             @Override
             public void run() {
-               String deviceIpAddress = getDeviceIpAddress();
-                if (deviceIpAddress != null) {
-                    String urlToOpen = "http://" + deviceIpAddress + ":" + SERVER_PORT + "/";
-                    Intent intent = new Intent(Intent.ACTION_VIEW, Uri.parse(urlToOpen));
-                    intent.setFlags(Intent.FLAG_ACTIVITY_NEW_TASK);
-                    startActivity(intent);
-                } else {
-                    // Handle the case where you couldn't retrieve the device IP address
-                }
+//               String deviceIpAddress = getDeviceIpAddress(this);
+//                if (deviceIpAddress != null) {
+//                    String urlToOpen = "http://" + deviceIpAddress + ":" + SERVER_PORT + "/";
+//                    Intent intent = new Intent(Intent.ACTION_VIEW, Uri.parse(urlToOpen));
+//                    intent.setFlags(Intent.FLAG_ACTIVITY_NEW_TASK);
+//                    startActivity(intent);
+//                } else {
+//                    // Handle the case where you couldn't retrieve the device IP address
+//                }
             }
         });
     }
 
-    private String getDeviceIpAddress() {
-        WifiManager wifiManager = (WifiManager) getSystemService(WIFI_SERVICE);
+    static String getDeviceIpAddress(Context context) {
+        WifiManager wifiManager = (WifiManager) context.getSystemService(WIFI_SERVICE);
         int ipAddress = wifiManager.getConnectionInfo().getIpAddress();
         if (ipAddress != 0) {
             return Formatter.formatIpAddress(ipAddress);
@@ -79,10 +80,12 @@ public class WebServerService extends Service {
             return null;
         }
     }
-
+    static String getUrl(Context context) {
+        return "http://" + getDeviceIpAddress(context) + ":" + SERVER_PORT;
+    }
     private void handleClientRequest(Socket clientSocket) {
         try {
-            String deviceIpAddress = getDeviceIpAddress();
+            String deviceIpAddress = getDeviceIpAddress(this);
             String request = getRequest(clientSocket);
             File folder = new File(getExternalFilesDir("Log_Datas").getAbsolutePath());
 
@@ -172,7 +175,7 @@ public class WebServerService extends Service {
 
     private void serveFileList(Socket clientSocket, File[] files) {
         try {
-            String deviceIpAddress = getDeviceIpAddress();
+            String deviceIpAddress = getDeviceIpAddress(this);
             OutputStream os = clientSocket.getOutputStream();
             StringBuilder response = new StringBuilder();
 
@@ -183,10 +186,12 @@ public class WebServerService extends Service {
             response.append("<!DOCTYPE html>\n");
             response.append("<html>\n");
             response.append("<head>\n");
-            response.append("    <title>File List</title>\n");
+            response.append("    <title>Logcat Logger</title>\n");
             response.append("</head>\n");
             response.append("<body>\n");
-            response.append("    <h1>File List</h1>\n");
+            response.append("    <h1>Logcat Logger Service - Log Files</h1>\n");
+            response.append("    <p>Click on the file link to download the log file.</p>\n");
+            response.append("    <p>Logger Service automatically removes files older than " + LogCaptureService.DELETE_LOGS_OLDER_THAN_DAYS + " days.</p>\n");
             response.append("    <ul>\n");
 
             for (File file : files) {

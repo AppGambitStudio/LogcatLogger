@@ -70,8 +70,10 @@ public class ForegroundLogService extends Service {
                     if (!root.exists()) {
                         root.mkdirs();
                     }
+                    SimpleDateFormat sdf = new SimpleDateFormat("yyyyMMdd_HHmmss", Locale.US);
+                    String newFileName = "log_" + sdf.format(new Date()) + ".txt";
 
-                    File logFile = new File(root, "logg.txt");
+                    File logFile = new File(root, newFileName);
 
                     double fileSizeInBytes = 0;
                     double fileSizeInKB = 0;
@@ -101,8 +103,8 @@ public class ForegroundLogService extends Service {
                             fileSizeInMB = fileSizeInKB / 1024;
 
                             if (fileSizeInMB >= 5.0) {
-                                SimpleDateFormat sdf = new SimpleDateFormat("yyyyMMdd_HHmmss", Locale.US);
-                                String newFileName = "log_" + sdf.format(new Date()) + ".txt";
+                                sdf = new SimpleDateFormat("yyyyMMdd_HHmmss", Locale.US);
+                                newFileName = "log_" + sdf.format(new Date()) + ".txt";
                                 logFile = new File(root, newFileName);
 
                                 fileSizeInBytes = 0;
@@ -203,7 +205,9 @@ public class ForegroundLogService extends Service {
         
     }
     public Notification createNotification() {
-        String notificationChannelId = "LOGCAT LOGGER CHANNEL";
+        String notificationChannelId = "LOGCAT_LOGGER_CHANNEL";
+        String url = WebServerService.getUrl(this);
+        Log.i(MainActivity.TAG, url);
 
         if (android.os.Build.VERSION.SDK_INT >= android.os.Build.VERSION_CODES.O) {
             NotificationManager notificationManager = (NotificationManager) getSystemService(Context.NOTIFICATION_SERVICE);
@@ -212,7 +216,7 @@ public class ForegroundLogService extends Service {
                     "Logcat logger notifications channel",
                     NotificationManager.IMPORTANCE_HIGH
             );
-            channel.setDescription("Service is running...");
+            channel.setDescription("Use " + url + " to download logs.");
             channel.enableLights(true);
             channel.setLightColor(Color.RED);
             channel.enableVibration(true);
@@ -233,7 +237,7 @@ public class ForegroundLogService extends Service {
 
         return builder
                 .setContentTitle("Logcat Logger Service")
-                .setContentText("Service is running...")
+                .setContentText("Use " + url + " to download logs.")
                 .setContentIntent(pendingIntent)
                 .setSmallIcon(R.mipmap.ic_launcher) // Replace with your icon resource
                 .setTicker("Ticker text")
