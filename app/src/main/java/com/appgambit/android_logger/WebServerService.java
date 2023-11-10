@@ -22,8 +22,6 @@ import java.nio.charset.StandardCharsets;
 import java.net.ServerSocket;
 import java.net.Socket;
 import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.Comparator;
 
 public class WebServerService extends Service {
     static final int SERVER_PORT = 12993;
@@ -111,11 +109,6 @@ public class WebServerService extends Service {
                     }
                 };
                 File[] files = folder.listFiles(filter);
-                Arrays.sort(files, new Comparator<File>(){
-                    public int compare(File f1, File f2)
-                    {
-                        return Long.valueOf(f1.lastModified()).compareTo(f2.lastModified());
-                    } });
                 serveFileList(clientSocket, files);
             }
 
